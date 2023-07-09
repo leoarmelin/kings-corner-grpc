@@ -14,4 +14,6 @@ if (project.hasProperty('protoc_platform')) {
 }
 ```
 I added the `protoc_platform` variable to the `gradle.properties` file:
-`protoc_platform=osx-x86_64`
+```kotlin
+protoc_platform=osx-x86_64
+```
