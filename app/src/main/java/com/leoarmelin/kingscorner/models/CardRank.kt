@@ -1,6 +1,7 @@
 package com.leoarmelin.kingscorner.models
 
-enum class CardRank(value: Int) {
+enum class CardRank(val value: Int) {
+    Blank(-1), // Else case
     Ace(1),
     Two(2),
     Three(3),
