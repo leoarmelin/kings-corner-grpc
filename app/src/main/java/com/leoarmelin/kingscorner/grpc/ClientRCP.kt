@@ -1,7 +1,9 @@
 package com.leoarmelin.kingscorner.grpc
 
 import android.net.Uri
+import android.util.Log
 import com.leoarmelin.kingscorner.BeginRequest
+import com.leoarmelin.kingscorner.BeginResponse
 import com.leoarmelin.kingscorner.CreateRequest
 import com.leoarmelin.kingscorner.GameServiceGrpc
 import com.leoarmelin.kingscorner.JoinRequest
@@ -11,9 +13,11 @@ import com.leoarmelin.kingscorner.PlayRequest.CardTurn
 import com.leoarmelin.kingscorner.PlayRequest.MoveTurn
 import com.leoarmelin.kingscorner.PlayerServiceGrpc
 import io.grpc.ManagedChannelBuilder
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.withContext
 import java.io.Closeable
 
 class ClientRCP : Closeable {
@@ -43,7 +47,7 @@ class ClientRCP : Closeable {
             .build()
     ).asFlow().collect { joinResponseCallback(it) }
 
-    fun beginGame(id: String) = gameService.begin(
+    fun beginGame(id: String): BeginResponse = gameService.begin(
         BeginRequest
             .newBuilder()
             .setId(id)
@@ -57,22 +61,67 @@ class ClientRCP : Closeable {
             .build()
     ).asFlow().collect { joinResponseCallback(it) }
 
+    suspend fun play(
+        gameId: String,
+        playerId: String,
+        cardTurn: CardTurn,
+    ) {
+        withContext(Dispatchers.IO) {
+            try {
+                playerService.play(
+                    PlayRequest
+                        .newBuilder()
+                        .setGameId(gameId)
+                        .setPlayerId(playerId)
+                        .setTurn(PlayRequest.Turn.CARD)
+                        .setCardTurn(cardTurn)
+                        .build()
+                )
+            } catch (e: StatusRuntimeException) {
+                Log.e("proto", e.message ?: "Some error ocurred")
+            }
+        }
+    }
+
     fun play(
         gameId: String,
         playerId: String,
-        turn: PlayRequest.Turn,
-        cardTurn: CardTurn,
         moveTurn: MoveTurn
-    ) = playerService.play(
-        PlayRequest
-            .newBuilder()
-            .setGameId(gameId)
-            .setPlayerId(playerId)
-            .setTurn(turn)
-            .setCardTurn(cardTurn)
-            .setMoveTurn(moveTurn)
-            .build()
-    )
+    ) {
+        try {
+            playerService.play(
+                PlayRequest
+                    .newBuilder()
+                    .setGameId(gameId)
+                    .setPlayerId(playerId)
+                    .setTurn(PlayRequest.Turn.MOVE)
+                    .setMoveTurn(moveTurn)
+                    .build()
+            )
+        } catch (e: StatusRuntimeException) {
+            Log.e("proto", e.message ?: "Some error ocurred")
+        }
+    }
+
+    suspend fun play(
+        gameId: String,
+        playerId: String,
+    ) {
+        withContext(Dispatchers.IO) {
+            try {
+                playerService.play(
+                    PlayRequest
+                        .newBuilder()
+                        .setGameId(gameId)
+                        .setPlayerId(playerId)
+                        .setTurn(PlayRequest.Turn.PASS)
+                        .build()
+                )
+            } catch (e: StatusRuntimeException) {
+                Log.e("proto", e.message ?: "Some error ocurred")
+            }
+        }
+    }
 
     override fun close() {
         channel.shutdownNow()
