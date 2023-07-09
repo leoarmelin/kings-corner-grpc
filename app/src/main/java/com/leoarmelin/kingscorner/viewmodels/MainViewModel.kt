@@ -32,6 +32,7 @@ class MainViewModel : ViewModel() {
     private val _fieldsGlobalPositionList = MutableStateFlow<List<FieldPosition>>(emptyList())
 
     private val _playerId = MutableStateFlow<String?>(null)
+    val playerId = _playerId.asStateFlow()
 
     private val _playerIds = MutableStateFlow<List<String>>(emptyList())
     val playerIds = _playerIds.asStateFlow()
