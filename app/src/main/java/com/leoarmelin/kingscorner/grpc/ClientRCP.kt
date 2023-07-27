@@ -20,8 +20,10 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.withContext
 import java.io.Closeable
 
-class ClientRCP : Closeable {
-    private val uri: Uri = Uri.parse("http://10.0.2.2:50051")
+class ClientRCP(
+    url: String
+) : Closeable {
+    private val uri: Uri = Uri.parse(url)
 
     var joinResponseCallback: (JoinResponse) -> Unit = {}
 
@@ -73,7 +75,7 @@ class ClientRCP : Closeable {
                         .newBuilder()
                         .setGameId(gameId)
                         .setPlayerId(playerId)
-                        .setTurn(PlayRequest.Turn.CARD)
+                        .setTurnMode(PlayRequest.Turn.CARD)
                         .setCardTurn(cardTurn)
                         .build()
                 )
@@ -94,7 +96,7 @@ class ClientRCP : Closeable {
                     .newBuilder()
                     .setGameId(gameId)
                     .setPlayerId(playerId)
-                    .setTurn(PlayRequest.Turn.MOVE)
+                    .setTurnMode(PlayRequest.Turn.MOVE)
                     .setMoveTurn(moveTurn)
                     .build()
             )
@@ -114,7 +116,7 @@ class ClientRCP : Closeable {
                         .newBuilder()
                         .setGameId(gameId)
                         .setPlayerId(playerId)
-                        .setTurn(PlayRequest.Turn.PASS)
+                        .setTurnMode(PlayRequest.Turn.PASS)
                         .build()
                 )
             } catch (e: StatusRuntimeException) {

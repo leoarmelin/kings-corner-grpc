@@ -7,13 +7,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import com.leoarmelin.kingscorner.components.BigButton
+import com.leoarmelin.kingscorner.models.AppRoute
+import com.leoarmelin.kingscorner.ui.theme.Cream500
 import com.leoarmelin.kingscorner.viewmodels.MainViewModel
 
 @Composable
@@ -21,19 +23,24 @@ fun QueueScreen(
     navController: NavHostController,
     mainViewModel: MainViewModel,
 ) {
-    val playerIds by mainViewModel.playerIds.collectAsState()
+    val playerList by mainViewModel.playerIds.collectAsState()
+    val isStarted by mainViewModel.isStarted.collectAsState()
 
-    // LaunchedEffect to check if game has began && navigate to GameScreen
+    LaunchedEffect(isStarted) {
+        if (!isStarted) return@LaunchedEffect
+
+        navController.navigate(AppRoute.Game.rawValue)
+    }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Blue),
+            .background(Cream500),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        items(playerIds) { playerId ->
-            Text(text = playerId)
+        items(playerList) { player ->
+            Text(text = player.id)
         }
 
         item {

@@ -4,6 +4,9 @@ plugins {
     id 'com.google.protobuf'
 }
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file("local.properties").newDataInputStream())
+
 android {
     namespace 'com.leoarmelin.kingscorner'
     compileSdk 33
@@ -19,6 +22,8 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        resValue "string", "grpc_url", properties.getProperty("grpc.url", "")
     }
 
     buildTypes {

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.leoarmelin.kingscorner.Board
 import com.leoarmelin.kingscorner.Board.Field
+import com.leoarmelin.kingscorner.Board.Player
 import com.leoarmelin.kingscorner.Card
 import com.leoarmelin.kingscorner.JoinResponse
 import com.leoarmelin.kingscorner.PlayRequest.CardTurn
@@ -18,8 +19,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel() {
-    private val clientRCP = ClientRCP()
+class MainViewModel(
+    grpcUrl: String
+) : ViewModel() {
+    private val clientRCP = ClientRCP(grpcUrl)
 
     private val _board = MutableStateFlow<Board?>(null)
 
@@ -34,8 +37,11 @@ class MainViewModel : ViewModel() {
     private val _playerId = MutableStateFlow<String?>(null)
     val playerId = _playerId.asStateFlow()
 
-    private val _playerIds = MutableStateFlow<List<String>>(emptyList())
-    val playerIds = _playerIds.asStateFlow()
+    private val _playerList = MutableStateFlow<List<Player>>(emptyList())
+    val playerIds = _playerList.asStateFlow()
+
+    private val _isStarted = MutableStateFlow(false)
+    val isStarted = _isStarted.asStateFlow()
 
     private var onReceiveJoinResponse: (JoinResponse) -> Unit = { joinResponse ->
         val fieldsString = joinResponse.board.fieldsList.map { field ->
@@ -52,7 +58,7 @@ class MainViewModel : ViewModel() {
             "proto",
             "=============BOARD=============\n" +
                     "board-id: ${joinResponse.board.id}\n" +
-                    "board-players-ids: ${joinResponse.board.playerIdsList}\n" +
+                    "board-players-ids: ${joinResponse.board.playersList}\n" +
                     "board-current-turn: ${joinResponse.board.currentTurn}\n" +
                     "board-is-started: ${joinResponse.board.isStarted}\n" +
                     "board-fields: ${fieldsString}\n" +
@@ -63,9 +69,10 @@ class MainViewModel : ViewModel() {
 
         _board.value = joinResponse.board
         _fieldsList.value = joinResponse.board.fieldsList
-        _playerIds.value = joinResponse.board.playerIdsList
+        _playerList.value = joinResponse.board.playersList
         _hand.value = joinResponse.handList
         _playerId.value = joinResponse.playerId
+        _isStarted.value = joinResponse.board.isStarted
     }
 
     init {
@@ -101,7 +108,7 @@ class MainViewModel : ViewModel() {
         val board = _board.value ?: return
         val playerId = _playerId.value ?: return
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             clientRCP.play(
                 gameId = board.id,
                 playerId = playerId,
@@ -118,11 +125,17 @@ class MainViewModel : ViewModel() {
         val board = _board.value ?: return
         val playerId = _playerId.value ?: return
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             clientRCP.play(
                 gameId = board.id,
                 playerId = playerId
             )
+        }
+    }
+
+    fun joinGame() {
+        viewModelScope.launch(Dispatchers.IO) {
+            clientRCP.joinGame("cishottdrb6p1l1jgs60")
         }
     }
 }

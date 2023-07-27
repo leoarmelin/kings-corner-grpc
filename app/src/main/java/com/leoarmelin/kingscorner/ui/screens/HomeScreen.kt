@@ -17,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
@@ -27,6 +26,7 @@ import androidx.navigation.NavHostController
 import com.leoarmelin.kingscorner.R
 import com.leoarmelin.kingscorner.components.BigButton
 import com.leoarmelin.kingscorner.models.AppRoute
+import com.leoarmelin.kingscorner.ui.theme.Cream500
 import com.leoarmelin.kingscorner.viewmodels.MainViewModel
 
 @Composable
@@ -46,7 +46,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Blue),
+            .background(Cream500),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -57,6 +57,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         BigButton("Join Game") {
+            mainViewModel.joinGame()
         }
     }
 }
